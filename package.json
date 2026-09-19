@@ -1,14 +1,13 @@
 {
-  "name": "minecraft-gemini-bot",
+  "name": "stryker-ai-websub",
   "version": "1.0.0",
-  "description": "Minecraft Gemini ve Özel Komut Botu",
+  "description": "AI Website Generator",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
     "@google/genai": "latest",
-    "mineflayer": "^4.20.0",
     "express": "^4.19.2"
   }
 }
