@@ -1,14 +1,20 @@
 const mineflayer = require('mineflayer');
 
 const bot = mineflayer.createBot({
-  host: 'sofiasky.mcsh.io', // Buraya MC sunucu IP'nizi yazın
-  port: 25565,                 // Port (Genelde 25565'tir)
-  username: 'ChatBotYardimcisi', // Botun oyundaki adı
-  version: '1.21.4'            // Kesin olarak 1.21.4 belirtiyoruz
+  host: 'sofiasky.mcsh.io', // Sunucu IP adresiniz
+  port: 25565,
+  username: 'ChatBotYardimcisi',
+  version: '1.21.4'
 });
 
 bot.on('spawn', () => {
-  console.log('Bot başarıyla 1.21.4 sunucusuna girdi!');
+  console.log('Bot başarıyla oyuna girdi!');
+});
+
+// Zorunlu kaynak paketini otomatik kabul etme olayı
+bot.on('resourcePackSend', (url, hash) => {
+  console.log('Kaynak paketi algılandı, indiriliyor...');
+  bot.acceptResourcePack(); // Paketi otomatik onaylar ve sunucudan atılmayı önler
 });
 
 bot.on('chat', (username, message) => {
