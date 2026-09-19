@@ -17,16 +17,28 @@ app.listen(PORT, () => {
 // Gemini API Başlatma
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-// Minecraft Bot Yapılandırması (Environment değişkenlerinden veya doğrudan yazabilirsin)
+// Minecraft Bot Yapılandırması
 const bot = mineflayer.createBot({
-    host: process.env.MC_HOST || 'sofiasky.mcsh.io', // Sunucu IP veya domain
-    port: parseInt(process.env.MC_PORT) || 25565,        // Sunucu Portu
-    username: process.env.MC_USERNAME || 'Sohbet',    // Botun oyundaki ismi
-    version: process.env.MC_VERSION || '1.21.4'          // Sunucu sürümü
+    host: process.env.MC_HOST || 'oyun.sunucuadresi.com',
+    port: parseInt(process.env.MC_PORT) || 25565,
+    username: process.env.MC_USERNAME || 'GeminiBot',
+    version: process.env.MC_VERSION || '1.21.4'
 });
 
 bot.on('spawn', () => {
     console.log(`Bot başarıyla oyuna girdi: ${bot.username}`);
+
+    // Oyuna girdikten 3 saniye sonra /register komutunu gönder
+    setTimeout(() => {
+        bot.chat('/register 12121212 12121212');
+        console.log('/register komutu gönderildi.');
+    }, 3000);
+
+    // Oyuna girdikten 6 saniye sonra /login komutunu gönder
+    setTimeout(() => {
+        bot.chat('/login 12121212');
+        console.log('/login komutu gönderildi.');
+    }, 6000);
 });
 
 // Oyundan mesaj gelince tetiklenir
@@ -42,7 +54,7 @@ bot.on('chat', async (username, message) => {
         return;
     }
 
-    // 2. Gemini Entegrasyonu (Örneğin mesaj "!ai" ile başlıyorsa veya botun adı geçiyorsa)
+    // 2. Gemini Entegrasyonu (!ai ile başlayan mesajlar)
     if (lowerMsg.startsWith('!ai ')) {
         const prompt = message.slice(4).trim();
         
@@ -59,10 +71,7 @@ bot.on('chat', async (username, message) => {
                 contents: prompt,
             });
 
-            // Minecraft sohbeti uzun mesajları bölebilir, ilk kısmını veya kısa bir özetini gönderelim
-            const replyText = response.text.replace(/\n/g, ' '); // Satır sonlarını düzelt
-            
-            // Minecraft chat sınırı için uzunsa kırpabilirsin, örnek ilk 200 karakter:
+            const replyText = response.text.replace(/\n/g, ' ');
             bot.chat(replyText.slice(0, 200));
 
         } catch (error) {
