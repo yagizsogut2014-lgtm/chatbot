@@ -1,11 +1,14 @@
 {
-  "name": "mc-chatbot",
+  "name": "minecraft-gemini-bot",
   "version": "1.0.0",
-  "main": "bot.js",
+  "description": "Minecraft Gemini ve Özel Komut Botu",
+  "main": "index.js",
   "scripts": {
-    "start": "node bot.js"
+    "start": "node index.js"
   },
   "dependencies": {
-    "mineflayer": "latest"
+    "@google/genai": "^0.1.1",
+    "mineflayer": "^4.20.0",
+    "express": "^4.19.2"
   }
 }
