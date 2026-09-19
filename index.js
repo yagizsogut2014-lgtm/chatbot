@@ -9,19 +9,20 @@ const PORT = process.env.PORT || 3000;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Gemini API Başlatma
+// Gemini API Başlatma (Render'daki GEMINI_API_KEY değişkenini otomatik kullanır)
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-// Ana Sayfa - Kullanıcının site isteyeceği arayüz
+// 1. Ana Sayfa (Site İsteme Arayüzü)
 app.get('/', (req, res) => {
     res.send(`
         <!DOCTYPE html>
         <html lang="tr">
         <head>
             <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>STRYKER AI - Otomatik Site Üreteci</title>
             <style>
-                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: #f8fafc; text-align: center; padding: 50px; }
+                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: #f8fafc; text-align: center; padding: 50px; margin: 0; }
                 .card { background: #1e293b; max-width: 600px; margin: 0 auto; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
                 h1 { color: #38bdf8; margin-bottom: 10px; }
                 p { color: #94a3b8; margin-bottom: 30px; }
@@ -34,10 +35,10 @@ app.get('/', (req, res) => {
         <body>
             <div class="card">
                 <h1>🚀 STRYKER AI Site Üreteci</h1>
-                <p>Nasıl bir site istiyorsan aşağıya yaz, yapay zeka anında tasarlasın!</p>
+                <p>Nasıl bir site istiyorsan aşağıya detaylıca yaz, yapay zeka anında tasarlasın!</p>
                 
                 <form action="/generate" method="POST">
-                    <textarea name="prompt" placeholder="Örn: Modern ve karanlık temalı bir Minecraft sunucu tanıtım sitesi olsun..."></textarea>
+                    <textarea name="prompt" placeholder="Örn: Modern ve karanlık temalı bir Minecraft sunucu tanıtım sitesi olsun, butonlar ve discord linki de koysun..."></textarea>
                     <button type="submit">Siteyi Oluştur</button>
                 </form>
             </div>
@@ -46,7 +47,7 @@ app.get('/', (req, res) => {
     `);
 });
 
-// Site Kodunu Gemini ile Üretme Rotası
+// 2. Gemini ile Kod Üretme ve Kaydetme Rotası
 app.post('/generate', async (req, res) => {
     const userPrompt = req.body.prompt;
 
@@ -55,7 +56,6 @@ app.post('/generate', async (req, res) => {
     }
 
     try {
-        // Gemini'ye tam ve tek dosyalık şık bir HTML sitesi üretmesi için talimat veriyoruz
         const aiPrompt = `Kullanıcının şu isteğine göre profesyonel, modern, şık tasarımlı, CSS stilleri içine gömülü (tek dosya) tam bir HTML web sitesi kodu yaz. Sadece saf HTML kodunu ver, Markdown (\`\`\`html ... \`\`\`) blokları kullanma, doğrudan <!DOCTYPE html> ile başlat: ${userPrompt}`;
 
         const response = await ai.models.generateContent({
@@ -65,10 +65,10 @@ app.post('/generate', async (req, res) => {
 
         let htmlCode = response.text.trim();
 
-        // Eğer Gemini yanlışlıkla markdown eklerse temizleyelim
+        // Gemini'nin ekleyebileceği olası markdown kalıplarını temizle
         htmlCode = htmlCode.replace(/^```html/, '').replace(/^```/, '').replace(/```$/, '').trim();
 
-        // Üretilen siteyi geçici olarak sunucuda bir dosyaya kaydedelim
+        // Üretilen siteyi sunucuya geçici olarak kaydet
         const fileName = `site-${Date.now()}.html`;
         const filePath = path.join(__dirname, fileName);
         fs.writeFileSync(filePath, htmlCode);
@@ -81,17 +81,18 @@ app.post('/generate', async (req, res) => {
                 <title>Site Hazır!</title>
                 <style>
                     body { font-family: sans-serif; background: #0f172a; color: #f8fafc; text-align: center; padding: 50px; }
-                    .card { background: #1e293b; max-width: 600px; margin: 0 auto; padding: 40px; border-radius: 16px; }
+                    .card { background: #1e293b; max-width: 600px; margin: 0 auto; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
                     a { color: #38bdf8; text-decoration: none; font-weight: bold; }
-                    .btn { background: #22c55e; color: white; padding: 12px 24px; border-radius: 8px; display: inline-block; margin-top: 20px; }
+                    .btn { background: #22c55e; color: white; padding: 12px 24px; border-radius: 8px; display: inline-block; margin-top: 20px; text-decoration: none; }
+                    .btn:hover { opacity: 0.9; }
                 </style>
             </head>
             <body>
                 <div class="card">
                     <h1>✨ Siten Başarıyla Oluşturuldu!</h1>
-                    <p>Yapay zeka istediğin siteyi başarıyla kodladı.</p>
+                    <p>Yapay zeka istediğin siteyi başarıyla kodladı ve yayına hazırladı.</p>
                     <a href="/view/${fileName}" target="_blank" class="btn">Oluşturulan Siteyi Görüntüle</a>
-                    <br><br>
+                    <br><br><br>
                     <a href="/">← Yeni Bir Site Yap</a>
                 </div>
             </body>
@@ -104,7 +105,7 @@ app.post('/generate', async (req, res) => {
     }
 });
 
-// Üretilen siteyi tarayıcıda gösterme rotası
+// 3. Üretilen Siteyi Görüntüleme Rotası
 app.get('/view/:filename', (req, res) => {
     const filePath = path.join(__dirname, req.params.filename);
     if (fs.existsSync(filePath)) {
@@ -114,6 +115,7 @@ app.get('/view/:filename', (req, res) => {
     }
 });
 
+// Sunucuyu Başlat
 app.listen(PORT, () => {
     console.log(`Site üreteci ${PORT} portunda aktif!`);
 });
